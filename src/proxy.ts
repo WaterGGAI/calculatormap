@@ -48,7 +48,7 @@ function getBasicAuthCredentials(request: NextRequest) {
   }
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   if (request.nextUrl.hostname === "www.calculatormap.com") {
     const destination = request.nextUrl.clone();
     destination.hostname = "calculatormap.com";

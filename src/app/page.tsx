@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ArticleCard } from "@/components/content/article-card";
@@ -56,121 +57,6 @@ type SectionStampLink = {
   href: string;
   tone: SealTone;
 };
-
-const heroLanes: LaneLink[] = [
-  {
-    short: "ROI",
-    title: "Business & Pricing",
-    detail: "Margins, break-even, markup, and seller fees.",
-    href: "/clusters/business-pricing-calculators",
-    tone: "gold"
-  },
-  {
-    short: "ADS",
-    title: "Marketing & Ecommerce",
-    detail: "ROAS, CPM, CPA, fees, and profit checks.",
-    href: "/clusters/marketing-ecommerce-calculators",
-    tone: "light"
-  },
-  {
-    short: "PAY",
-    title: "Salary & Work",
-    detail: "Rate, commission, payroll, and offer math.",
-    href: "/clusters/salary-work-calculators",
-    tone: "mint"
-  },
-  {
-    short: "YRD",
-    title: "Home Improvement & Cost",
-    detail: "Concrete, paint, gravel, and room planning.",
-    href: "/clusters/home-improvement-cost-calculators",
-    tone: "gold"
-  }
-];
-
-const categoryStamps: SectionStampLink[] = [
-  {
-    short: "FIN",
-    label: "Finance",
-    detail: "Loans, savings, travel, and mortgage math.",
-    href: "/category/finance",
-    tone: "mint"
-  },
-  {
-    short: "MAT",
-    label: "Math",
-    detail: "Discounts, tax, percentages, and tips.",
-    href: "/category/math",
-    tone: "gold"
-  },
-  {
-    short: "HOM",
-    label: "Home & Family",
-    detail: "Household planning, rooms, and recurring costs.",
-    href: "/category/home-family",
-    tone: "dark"
-  },
-  {
-    short: "TEC",
-    label: "Tech",
-    detail: "Screens, charging, power, and device planning.",
-    href: "/category/tech",
-    tone: "light"
-  },
-  {
-    short: "TXT",
-    label: "Text Tools",
-    detail: "Counts, cleanup, and quick writing utilities.",
-    href: "/category/text-tools",
-    tone: "mint"
-  },
-  {
-    short: "HLT",
-    label: "Health",
-    detail: "BMI, calories, body metrics, and pace.",
-    href: "/category/health",
-    tone: "gold"
-  }
-];
-
-const heroSignals = [
-  {
-    short: "MAP",
-    label: "Intent-led structure",
-    detail: "Calculators, clusters, and guides stay connected around the same decision."
-  },
-  {
-    short: "FST",
-    label: "Fast working surface",
-    detail: "Most tools get to a usable number in seconds, not a long setup flow."
-  },
-  {
-    short: "USE",
-    label: "Practical follow-through",
-    detail: "Formula notes and guides stay beside the result when context matters."
-  }
-];
-
-const finalActions = [
-  {
-    short: "ALL",
-    label: "All calculators",
-    href: "/calculators",
-    tone: "light" as const
-  },
-  {
-    short: "SEO",
-    label: "Search clusters",
-    href: "/clusters",
-    tone: "gold" as const
-  },
-  {
-    short: "READ",
-    label: "Guides",
-    href: "/articles",
-    tone: "mint" as const
-  }
-];
 
 const sealToneStyles: Record<SealTone, { shell: string; inner: string; label: string }> = {
   light: {
@@ -327,9 +213,12 @@ export function renderHomePage(locale: AppLocale = defaultLocale) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageSchema) }} />
 
       <section className="relative isolate overflow-hidden bg-[#0c1816] text-white">
-        <img
+        <Image
           alt="CalculatorMap planning desk with laptop, calculator, notes, and charts"
           className="absolute inset-0 size-full object-cover object-center opacity-42"
+          fill
+          priority
+          sizes="100vw"
           src="https://images.pexels.com/photos/20552572/pexels-photo-20552572.jpeg?auto=compress&cs=tinysrgb&w=1800"
         />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,16,14,0.9),rgba(7,16,14,0.6),rgba(7,16,14,0.8))]" />

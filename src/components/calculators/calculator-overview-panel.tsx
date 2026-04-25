@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { Calculator, CalculatorCategory } from "@/lib/calculators/types";
 import { defaultLocale, getLocaleMessages, type AppLocale } from "@/lib/i18n";
 import { getCalculatorVisualTheme, type CalculatorVisualMotif, type CalculatorVisualTheme } from "@/lib/calculator-visuals";
@@ -315,7 +316,13 @@ export function CalculatorOverviewPanel({
   return (
     <section className="mt-8 grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)]">
       <div className={cn("relative min-h-[18rem] overflow-hidden rounded-md border", visual.panelClass)}>
-        <img alt={visual.imageAlt} className={cn("absolute inset-0 size-full object-cover", visual.imagePositionClass)} src={visual.imageUrl} />
+        <Image
+          alt={visual.imageAlt}
+          className={cn("absolute inset-0 size-full object-cover", visual.imagePositionClass)}
+          fill
+          sizes="(min-width: 1280px) 40vw, 100vw"
+          src={visual.imageUrl}
+        />
         <div className={cn("absolute inset-0", visual.overlayClass)} />
         <div className="noise absolute inset-0 opacity-20" />
         <CategoryMotif locale={locale} motif={visual.motif} />

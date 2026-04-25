@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { FieldLabel, Input, Select, Textarea } from "@/components/ui/field";
 import { getMergedCalculatorBySlug } from "@/lib/calculator-content";
-import { categories, getCalculator } from "@/lib/data";
+import { categories } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 

@@ -29,9 +29,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "npm run typecheck",
+    "lint": "eslint . --max-warnings=0",
     "typecheck": "next typegen && tsc --noEmit",
-    "verify": "npm run typecheck && npm run build",
+    "verify": "npm run lint && npm run typecheck && npm run build",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
@@ -56,6 +56,8 @@
     "@types/node": "25.6.0",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.2.4",
     "typescript": "6.0.2",
     "wrangler": "4.81.1"
   }

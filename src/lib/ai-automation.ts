@@ -1,4 +1,4 @@
-import { buildAppliedOverride, type AiSeoTaskType } from "@/lib/ai-seo-core";
+import { buildAppliedOverride } from "@/lib/ai-seo-core";
 import { generateAiSeoBundleWithAi } from "@/lib/ai-seo-engine";
 import {
   getCalculatorOverrideBySlugFromDb,
@@ -6,11 +6,9 @@ import {
   mergeCalculatorOverride,
   upsertCalculatorContentOverrideInDb
 } from "@/lib/calculator-content";
-import type { Calculator } from "@/lib/calculators/types";
 import { calculators } from "@/lib/data";
 import {
   createAutomationRunInDb,
-  defaultSeoAutomationSettings,
   finishAutomationRunInDb,
   getAutomationSettingsFromDb,
   type SeoAutomationSettings,
