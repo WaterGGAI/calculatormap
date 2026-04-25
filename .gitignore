@@ -1,0 +1,19 @@
+.DS_Store
+.env
+.env*.local
+.next
+.open-next
+.wrangler
+node_modules
+dist
+*.tsbuildinfo
+wrangler.jsonc
+wrangler.api.jsonc
+seo.txt
+seo_calculator_cms_spec (1).md
+src/middleware (1).ts
+.playwright-mcp
+cloudflare-env.d.ts
+worker/src/worker-configuration.d.ts
+
+.playwright-mcp

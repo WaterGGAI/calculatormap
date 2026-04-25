@@ -1,0 +1,36 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "calculatormap",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-04-12",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "your_d1_database_name",
+      "database_id": "your-d1-database-id"
+    }
+  ],
+  "ai": {
+    "binding": "AI",
+    "remote": true
+  },
+  "routes": [
+    {
+      "pattern": "your-domain.com",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.your-domain.com",
+      "custom_domain": true
+    }
+  ]
+}

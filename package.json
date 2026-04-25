@@ -1,0 +1,38 @@
+{
+  "name": "seo-calculator-cms",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "worker:dev": "wrangler dev --config wrangler.api.jsonc",
+    "worker:deploy": "wrangler deploy --config wrangler.api.jsonc",
+    "worker:types": "wrangler types worker/src/worker-configuration.d.ts --config wrangler.api.jsonc",
+    "d1:migrate:local": "wrangler d1 migrations apply seo_calculator_cms --local --config wrangler.api.jsonc",
+    "d1:migrate:remote": "wrangler d1 migrations apply seo_calculator_cms --remote --config wrangler.api.jsonc"
+  },
+  "dependencies": {
+    "@opennextjs/cloudflare": "latest",
+    "@tailwindcss/postcss": "latest",
+    "clsx": "latest",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "tailwind-merge": "latest",
+    "tailwindcss": "latest"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "typescript": "latest",
+    "wrangler": "latest"
+  }
+}
