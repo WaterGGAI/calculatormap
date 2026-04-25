@@ -109,8 +109,11 @@ wrangler.api.example.jsonc
 1. Install dependencies:
 
 ```bash
+nvm use
 npm install
 ```
+
+The repository pins Node `20.20.0` in [`.nvmrc`](.nvmrc) and [`.node-version`](.node-version) for consistent local setup.
 
 2. Copy local environment variables:
 
@@ -124,6 +127,7 @@ cp .env.example .env.local
 
 ```bash
 npm run dev
+npm run verify
 ```
 
 Open `http://localhost:3000` for the public site. Browsers will prompt for credentials when visiting `http://localhost:3000/admin`.
@@ -132,8 +136,10 @@ Open `http://localhost:3000` for the public site. Browsers will prompt for crede
 
 ```bash
 npm run dev
+npm run lint
 npm run typecheck
 npm run build
+npm run verify
 npm run preview
 npm run worker:dev
 ```

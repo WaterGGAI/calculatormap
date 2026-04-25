@@ -27,8 +27,11 @@ This repository is meant to stay practical, deployable, and easy to understand. 
 1. Install dependencies:
 
 ```bash
+nvm use
 npm install
 ```
+
+The project pins Node `20.20.0` in [`.nvmrc`](.nvmrc) and [`.node-version`](.node-version) so local and CI environments stay aligned.
 
 2. Copy environment variables:
 
@@ -54,8 +57,7 @@ npm run dev
 Run these before opening a pull request:
 
 ```bash
-npm run typecheck
-npm run build
+npm run verify
 ```
 
 If your change touches the scheduled Worker or Cloudflare-specific code, also smoke-check the related local flow when possible.

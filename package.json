@@ -1,13 +1,37 @@
 {
-  "name": "seo-calculator-cms",
+  "name": "calculatormap",
   "version": "0.1.0",
+  "description": "Cloudflare-ready calculator platform with localized Next.js pages, protected admin tooling, and AI SEO automation.",
   "private": true,
+  "homepage": "https://github.com/WaterGGAI/calculatormap#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WaterGGAI/calculatormap.git"
+  },
+  "bugs": {
+    "url": "https://github.com/WaterGGAI/calculatormap/issues"
+  },
+  "keywords": [
+    "calculators",
+    "nextjs",
+    "cloudflare",
+    "workers",
+    "d1",
+    "seo",
+    "zh-tw"
+  ],
+  "engines": {
+    "node": ">=20.9 <23",
+    "npm": ">=10 <11"
+  },
+  "packageManager": "npm@10.8.2",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "npm run typecheck",
     "typecheck": "next typegen && tsc --noEmit",
+    "verify": "npm run typecheck && npm run build",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
@@ -18,21 +42,21 @@
     "d1:migrate:remote": "wrangler d1 migrations apply seo_calculator_cms --remote --config wrangler.api.jsonc"
   },
   "dependencies": {
-    "@opennextjs/cloudflare": "latest",
-    "@tailwindcss/postcss": "latest",
-    "clsx": "latest",
-    "next": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "tailwind-merge": "latest",
-    "tailwindcss": "latest"
+    "@opennextjs/cloudflare": "1.19.1",
+    "@tailwindcss/postcss": "4.2.2",
+    "clsx": "2.1.1",
+    "next": "16.2.3",
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "tailwind-merge": "3.5.0",
+    "tailwindcss": "4.2.2"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "latest",
-    "@types/node": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "typescript": "latest",
-    "wrangler": "latest"
+    "@cloudflare/workers-types": "4.20260412.1",
+    "@types/node": "25.6.0",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "typescript": "6.0.2",
+    "wrangler": "4.81.1"
   }
 }
