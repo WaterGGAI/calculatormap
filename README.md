@@ -4,6 +4,14 @@ CalculatorMap is a Cloudflare-ready calculator site built with Next.js App Route
 
 Live site: [calculatormap.com](https://calculatormap.com)
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/homepage.png" alt="CalculatorMap homepage" width="32%" />
+  <img src="docs/screenshots/loan-calculator.png" alt="Loan payment calculator page" width="32%" />
+  <img src="docs/screenshots/zh-tw-calculators.png" alt="Traditional Chinese calculators page" width="32%" />
+</p>
+
 ## Highlights
 
 - Public calculator, category, guide, and static content routes
