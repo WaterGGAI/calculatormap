@@ -1,0 +1,53 @@
+name: Bug report
+description: Report a broken behavior, regression, or incorrect calculator output
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting this. Clear reproduction steps and screenshots help a lot.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the bug and the behavior you expected instead.
+      placeholder: The calculator result does not match the displayed formula...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include the exact page, inputs, and actions.
+      placeholder: |
+        1. Open ...
+        2. Enter ...
+        3. Click ...
+    validations:
+      required: true
+  - type: input
+    id: route
+    attributes:
+      label: Affected route
+      placeholder: /calculator/loan-payment-calculator
+  - type: dropdown
+    id: locale
+    attributes:
+      label: Locale
+      options:
+        - en
+        - zh-TW
+        - both
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or evidence
+      description: Paste screenshots, calculations, console output, or anything else useful.
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, device, and screen size if relevant.
+      placeholder: Chrome on macOS, iPhone Safari, desktop 1440px wide...

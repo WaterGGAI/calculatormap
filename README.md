@@ -6,6 +6,7 @@
   <img src="https://img.shields.io/badge/Next.js-16-111111?style=flat-square" alt="Next.js 16" />
   <img src="https://img.shields.io/badge/Cloudflare-Workers%20%2B%20D1-f38020?style=flat-square" alt="Cloudflare Workers and D1" />
   <img src="https://img.shields.io/badge/locales-en%20%7C%20zh--TW-0ea5e9?style=flat-square" alt="English and Traditional Chinese" />
+  <a href="https://github.com/WaterGGAI/calculatormap/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/WaterGGAI/calculatormap/ci.yml?branch=main&style=flat-square" alt="CI status" /></a>
 </p>
 
 CalculatorMap is a Cloudflare-ready calculator platform built with Next.js App Router, a protected admin area, D1-backed content management, and unattended AI SEO automation.
@@ -38,6 +39,8 @@ Live site: [calculatormap.com](https://calculatormap.com)
 - Traditional Chinese calculators: [calculatormap.com/zh-TW/calculators](https://calculatormap.com/zh-TW/calculators)
 - Cluster landing pages: [calculatormap.com/clusters](https://calculatormap.com/clusters)
 - Protected admin area: `/admin` with HTTP Basic Auth
+- Contribution guide: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Project roadmap: [ROADMAP.md](ROADMAP.md)
 
 ## Product Shape
 
@@ -175,6 +178,10 @@ Open `/admin/settings` to manage unattended mode:
 ## Why Open Source
 
 CalculatorMap is structured so the deployable surface, content model, and automation layer can be studied and adapted without exposing live production bindings. The public repository keeps the real Cloudflare resource IDs out of version control while leaving enough of the app intact to run, inspect, extend, and redeploy in another account.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, scope guidance, and pull request expectations.
 
 ## License
 
