@@ -3,3 +3,6 @@ contact_links:
   - name: Live site
     url: https://calculatormap.com
     about: Explore the current public product before filing an issue.
+  - name: Security policy
+    url: https://github.com/WaterGGAI/calculatormap/blob/main/SECURITY.md
+    about: Please use a private reporting path for vulnerabilities instead of public issues.

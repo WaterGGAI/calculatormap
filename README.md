@@ -41,6 +41,8 @@ Live site: [calculatormap.com](https://calculatormap.com)
 - Protected admin area: `/admin` with HTTP Basic Auth
 - Contribution guide: [CONTRIBUTING.md](CONTRIBUTING.md)
 - Project roadmap: [ROADMAP.md](ROADMAP.md)
+- Code of conduct: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- Security policy: [SECURITY.md](SECURITY.md)
 
 ## Product Shape
 
@@ -182,6 +184,11 @@ CalculatorMap is structured so the deployable surface, content model, and automa
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, scope guidance, and pull request expectations.
+
+## Community
+
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- [SECURITY.md](SECURITY.md)
 
 ## License
 
