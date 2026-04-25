@@ -1,6 +1,14 @@
 # CalculatorMap
 
-CalculatorMap is a Cloudflare-ready calculator site built with Next.js App Router, a protected admin area, D1-backed content management, and unattended AI SEO automation.
+<p align="center">
+  <a href="https://calculatormap.com"><img src="https://img.shields.io/badge/live-calculatormap.com-0f766e?style=flat-square" alt="Live site" /></a>
+  <img src="https://img.shields.io/badge/license-MIT-f4c542?style=flat-square" alt="MIT license" />
+  <img src="https://img.shields.io/badge/Next.js-16-111111?style=flat-square" alt="Next.js 16" />
+  <img src="https://img.shields.io/badge/Cloudflare-Workers%20%2B%20D1-f38020?style=flat-square" alt="Cloudflare Workers and D1" />
+  <img src="https://img.shields.io/badge/locales-en%20%7C%20zh--TW-0ea5e9?style=flat-square" alt="English and Traditional Chinese" />
+</p>
+
+CalculatorMap is a Cloudflare-ready calculator platform built with Next.js App Router, a protected admin area, D1-backed content management, and unattended AI SEO automation.
 
 Live site: [calculatormap.com](https://calculatormap.com)
 
@@ -12,7 +20,7 @@ Live site: [calculatormap.com](https://calculatormap.com)
   <img src="docs/screenshots/zh-tw-calculators.png" alt="Traditional Chinese calculators page" width="32%" />
 </p>
 
-## Highlights
+## What This Repository Includes
 
 - Public calculator, category, guide, and static content routes
 - Traditional Chinese admin area under `/admin`
@@ -22,6 +30,38 @@ Live site: [calculatormap.com](https://calculatormap.com)
 - Cloudflare Worker automation for scheduled AI SEO generation
 - D1 migrations and seed data for local or remote setup
 
+## Quick Demo
+
+- Homepage: [calculatormap.com](https://calculatormap.com)
+- Calculator index: [calculatormap.com/calculators](https://calculatormap.com/calculators)
+- Loan payment calculator: [calculatormap.com/calculator/loan-payment-calculator](https://calculatormap.com/calculator/loan-payment-calculator)
+- Traditional Chinese calculators: [calculatormap.com/zh-TW/calculators](https://calculatormap.com/zh-TW/calculators)
+- Cluster landing pages: [calculatormap.com/clusters](https://calculatormap.com/clusters)
+- Protected admin area: `/admin` with HTTP Basic Auth
+
+## Product Shape
+
+### Public experience
+
+- Calculator detail pages with formulas, examples, notes, and FAQs
+- Category and cluster pages for related decision flows
+- Long-form articles connected to calculators and topics
+- English default routes plus Traditional Chinese localized routes
+
+### Admin workflows
+
+- Hidden `/admin` console protected with HTTP Basic Auth
+- Calculator backlog, categories, FAQs, internal links, media, and SEO screens
+- AI SEO settings and manual batch runs
+- Cloudflare-backed settings reads and write paths
+
+### Automation layer
+
+- Scheduled Worker entrypoint in `worker/src/index.ts`
+- D1-backed automation settings and run history
+- Workers AI generation flow for content refreshes and overrides
+- Local and remote D1 migration scripts for repeatable setup
+
 ## Tech stack
 
 - Next.js
@@ -30,6 +70,34 @@ Live site: [calculatormap.com](https://calculatormap.com)
 - Tailwind CSS
 - OpenNext for Cloudflare
 - Cloudflare Workers, D1, R2, and Workers AI
+
+## Architecture
+
+```mermaid
+flowchart LR
+    U["Visitors and Editors"] --> F["Next.js App Router Frontend"]
+    F --> P["Protected /admin Experience"]
+    F --> W["OpenNext Cloudflare Worker"]
+    W --> D["Cloudflare D1"]
+    W --> A["Workers AI"]
+    S["Scheduled API Worker"] --> D
+    S --> A
+    D --> C["Calculator Content and Overrides"]
+    D --> R["Automation Runs and Settings"]
+```
+
+## Project structure
+
+```text
+src/app/                 App Router routes for public pages, localized pages, APIs, and admin
+src/components/          Public UI, calculator UI, and admin UI components
+src/lib/                 Calculator content, localization, SEO, Cloudflare access, and automation helpers
+migrations/              D1 schema and seed data
+worker/                  Scheduled API Worker for unattended SEO automation
+docs/screenshots/        README screenshots
+wrangler.example.jsonc   Public Cloudflare deployment template
+wrangler.api.example.jsonc
+```
 
 ## Getting started
 
@@ -55,11 +123,14 @@ npm run dev
 
 Open `http://localhost:3000` for the public site. Browsers will prompt for credentials when visiting `http://localhost:3000/admin`.
 
-## Build and checks
+## Common commands
 
 ```bash
+npm run dev
 npm run typecheck
 npm run build
+npm run preview
+npm run worker:dev
 ```
 
 ## Cloudflare setup
@@ -82,7 +153,7 @@ npx wrangler secret put ADMIN_USERNAME
 npx wrangler secret put ADMIN_PASSWORD
 ```
 
-## Deploy
+## Deployments
 
 ```bash
 npm run deploy
@@ -100,6 +171,10 @@ Open `/admin/settings` to manage unattended mode:
 - set minimum refresh interval
 - tune default task, model, tone, length, and temperature
 - run a manual batch for verification
+
+## Why Open Source
+
+CalculatorMap is structured so the deployable surface, content model, and automation layer can be studied and adapted without exposing live production bindings. The public repository keeps the real Cloudflare resource IDs out of version control while leaving enough of the app intact to run, inspect, extend, and redeploy in another account.
 
 ## License
 
