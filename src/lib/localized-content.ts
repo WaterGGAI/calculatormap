@@ -520,6 +520,7 @@ const exactTextTranslations: Record<string, string> = {
   "Enter a value and select units to convert weight.": "輸入數值並選擇單位，換算重量。",
   "Convert Celsius, Fahrenheit, and Kelvin.": "換算攝氏、華氏與開爾文。",
   "Enter a temperature and choose source and target units.": "輸入溫度並選擇來源與目標單位。",
+  "Break-even is not possible when price per unit is less than or equal to variable cost per unit.": "當單價小於或等於每單位變動成本時，不存在實際的損益平衡點。",
   "Estimate fuel needed, trip cost, and cost per mile.": "估算所需燃料、旅程成本與每英里成本。",
   "Enter distance, fuel economy, and price per gallon to estimate fuel cost.": "輸入距離、油耗與每加侖價格，估算燃料成本。",
   "Estimate a planning date from a cycle start and an editable day offset.": "根據週期開始日期與可編輯的天數偏移，估算規劃日期。",

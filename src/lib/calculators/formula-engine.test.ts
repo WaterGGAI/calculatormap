@@ -347,3 +347,70 @@ test("Random draw tool returns a deterministic seeded pick list", () => {
   assertClose(output.values.pickedCount, 2);
   assert.equal(output.values.pickedItems, "Bob, Charlie");
 });
+
+test("Profit margin calculator returns gross profit, margin, and markup", () => {
+  const calculator = getRequiredCalculator("profit-margin-calculator");
+  const output = calculate(calculator, {
+    revenue: "150",
+    cost: "90"
+  });
+
+  assert.deepEqual(output.errors, []);
+  assertClose(output.values.grossProfit, 60);
+  assertClose(output.values.marginPercent, 40);
+  assertClose(output.values.markupPercent, 66.66666666666666);
+});
+
+test("Break-even calculator returns contribution, units, and revenue for a viable product", () => {
+  const calculator = getRequiredCalculator("break-even-calculator");
+  const output = calculate(calculator, {
+    fixedCosts: "5000",
+    pricePerUnit: "45",
+    variableCostPerUnit: "18"
+  });
+
+  assert.deepEqual(output.errors, []);
+  assertClose(output.values.contributionPerUnit, 27);
+  assertClose(output.values.breakEvenUnits, 185.1851851851852);
+  assertClose(output.values.breakEvenRevenue, 8333.333333333334);
+});
+
+test("Break-even calculator surfaces when no practical break-even point exists", () => {
+  const calculator = getRequiredCalculator("break-even-calculator");
+  const output = calculate(calculator, {
+    fixedCosts: "5000",
+    pricePerUnit: "18",
+    variableCostPerUnit: "18"
+  });
+
+  assertClose(output.values.contributionPerUnit, 0);
+  assert.equal(output.values.breakEvenUnits, undefined);
+  assert.equal(output.values.breakEvenRevenue, undefined);
+  assert.deepEqual(output.errors, ["Break-even is not possible when price per unit is less than or equal to variable cost per unit."]);
+});
+
+test("Pricing calculator recommends a selling price from cost and target margin", () => {
+  const calculator = getRequiredCalculator("pricing-calculator");
+  const output = calculate(calculator, {
+    costPerUnit: "40",
+    targetMarginPercent: "35"
+  });
+
+  assert.deepEqual(output.errors, []);
+  assertClose(output.values.sellingPrice, 61.53846153846153);
+  assertClose(output.values.grossProfitPerUnit, 21.538461538461533);
+});
+
+test("Take-home pay calculator subtracts tax and other deductions", () => {
+  const calculator = getRequiredCalculator("take-home-pay-calculator");
+  const output = calculate(calculator, {
+    grossPay: "5500",
+    taxRate: "22",
+    otherDeductions: "250"
+  });
+
+  assert.deepEqual(output.errors, []);
+  assertClose(output.values.taxAmount, 1210);
+  assertClose(output.values.netPay, 4040);
+  assertClose(output.values.effectiveNetPercent, 73.45454545454545);
+});

@@ -592,6 +592,18 @@ export function calculate(calculator: Calculator, values: Record<string, string>
       const variables = Object.fromEntries(Object.entries(values).map(([key, value]) => [key, Number(value)]));
       const expressions = calculator.formulaConfig?.expressions ?? {};
       try {
+        if (calculator.slug === "break-even-calculator") {
+          const contributionPerUnit = variables.pricePerUnit - variables.variableCostPerUnit;
+          resultValues.contributionPerUnit = contributionPerUnit;
+
+          if (!Number.isFinite(contributionPerUnit) || contributionPerUnit <= 0) {
+            return {
+              values: resultValues,
+              errors: ["Break-even is not possible when price per unit is less than or equal to variable cost per unit."]
+            };
+          }
+        }
+
         for (const result of calculator.results) {
           const expression = expressions[result.key];
           if (!expression) {
