@@ -414,3 +414,41 @@ test("Take-home pay calculator subtracts tax and other deductions", () => {
   assertClose(output.values.netPay, 4040);
   assertClose(output.values.effectiveNetPercent, 73.45454545454545);
 });
+
+test("Mortgage refinance calculator reports when refinancing does not create monthly savings", () => {
+  const calculator = getRequiredCalculator("mortgage-refinance-calculator");
+  const output = calculate(calculator, {
+    oldPayment: "1900",
+    newPayment: "2200",
+    closingCosts: "4500"
+  });
+
+  assertClose(output.values.monthlySavings, -300);
+  assert.equal(output.values.breakEvenMonths, undefined);
+  assert.deepEqual(output.errors, ["Break-even is not possible when the new payment is greater than or equal to the old payment."]);
+});
+
+test("Pricing calculator rejects impossible target margins of 100 percent or more", () => {
+  const calculator = getRequiredCalculator("pricing-calculator");
+  const output = calculate(calculator, {
+    costPerUnit: "40",
+    targetMarginPercent: "100"
+  });
+
+  assert.deepEqual(output.values, {});
+  assert.deepEqual(output.errors, ["Target margin must be less than 100 percent."]);
+});
+
+test("Freelance rate calculator rejects tax rates of 100 percent or more", () => {
+  const calculator = getRequiredCalculator("freelance-rate-calculator");
+  const output = calculate(calculator, {
+    targetIncome: "90000",
+    businessCosts: "12000",
+    taxRate: "100",
+    billableHours: "1200",
+    projectHours: "20"
+  });
+
+  assert.deepEqual(output.values, {});
+  assert.deepEqual(output.errors, ["Tax rate must be less than 100 percent to calculate required revenue."]);
+});

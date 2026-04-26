@@ -280,6 +280,39 @@ function hashString(value: string) {
   return hash >>> 0;
 }
 
+function getExpressionDomainError(calculator: Calculator, variables: Record<string, number>, resultValues: Record<string, number | string>) {
+  switch (calculator.slug) {
+    case "break-even-calculator": {
+      const contributionPerUnit = variables.pricePerUnit - variables.variableCostPerUnit;
+      resultValues.contributionPerUnit = contributionPerUnit;
+
+      if (!Number.isFinite(contributionPerUnit) || contributionPerUnit <= 0) {
+        return "Break-even is not possible when price per unit is less than or equal to variable cost per unit.";
+      }
+      return null;
+    }
+    case "mortgage-refinance-calculator": {
+      const monthlySavings = variables.oldPayment - variables.newPayment;
+      resultValues.monthlySavings = monthlySavings;
+
+      if (!Number.isFinite(monthlySavings) || monthlySavings <= 0) {
+        return "Break-even is not possible when the new payment is greater than or equal to the old payment.";
+      }
+      return null;
+    }
+    case "pricing-calculator":
+      return variables.targetMarginPercent >= 100 ? "Target margin must be less than 100 percent." : null;
+    case "freelance-rate-calculator":
+      return variables.taxRate >= 100 ? "Tax rate must be less than 100 percent to calculate required revenue." : null;
+    default:
+      return null;
+  }
+}
+
+function getExpressionNonFiniteError() {
+  return "One or more inputs must be greater than zero for this calculation.";
+}
+
 export function calculate(calculator: Calculator, values: Record<string, string>): CalculationOutput {
   const errors: string[] = [];
   const resultValues: Record<string, number | string> = {};
@@ -592,24 +625,33 @@ export function calculate(calculator: Calculator, values: Record<string, string>
       const variables = Object.fromEntries(Object.entries(values).map(([key, value]) => [key, Number(value)]));
       const expressions = calculator.formulaConfig?.expressions ?? {};
       try {
-        if (calculator.slug === "break-even-calculator") {
-          const contributionPerUnit = variables.pricePerUnit - variables.variableCostPerUnit;
-          resultValues.contributionPerUnit = contributionPerUnit;
-
-          if (!Number.isFinite(contributionPerUnit) || contributionPerUnit <= 0) {
-            return {
-              values: resultValues,
-              errors: ["Break-even is not possible when price per unit is less than or equal to variable cost per unit."]
-            };
-          }
+        const domainError = getExpressionDomainError(calculator, variables, resultValues);
+        if (domainError) {
+          return {
+            values: resultValues,
+            errors: [domainError]
+          };
         }
 
+        const nonFiniteResults: string[] = [];
         for (const result of calculator.results) {
           const expression = expressions[result.key];
           if (!expression) {
             continue;
           }
-          resultValues[result.key] = evaluateMathExpression(expression, variables);
+          const nextValue = evaluateMathExpression(expression, variables);
+          if (!Number.isFinite(nextValue)) {
+            nonFiniteResults.push(result.key);
+            continue;
+          }
+          resultValues[result.key] = nextValue;
+        }
+
+        if (nonFiniteResults.length > 0) {
+          return {
+            values: resultValues,
+            errors: [getExpressionNonFiniteError()]
+          };
         }
       } catch (error) {
         return { values: resultValues, errors: [error instanceof Error ? error.message : "Check the formula inputs."] };
