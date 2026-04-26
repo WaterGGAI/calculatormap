@@ -61,6 +61,12 @@ npm test
 npm run verify
 ```
 
+For focused TDD on one area, you can run a single file:
+
+```bash
+npm run test:file -- src/lib/calculators/formula-engine.test.ts
+```
+
 If your change touches the scheduled Worker or Cloudflare-specific code, also smoke-check the related local flow when possible.
 
 ## Pull request guidelines

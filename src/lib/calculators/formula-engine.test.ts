@@ -79,3 +79,110 @@ test("Loan payment calculator returns a clear validation error for invalid input
   assert.deepEqual(output.values, {});
   assert.deepEqual(output.errors, ["Loan term is required."]);
 });
+
+test("Compound interest calculator matches the documented monthly compounding example", () => {
+  const calculator = getRequiredCalculator("compound-interest-calculator");
+  const output = calculate(calculator, {
+    principal: "10000",
+    annualRate: "5",
+    years: "10",
+    compoundsPerYear: "12"
+  });
+
+  assert.deepEqual(output.errors, []);
+  assertClose(output.values.futureValue, 16470.0949769028);
+  assertClose(output.values.interestEarned, 6470.094976902801);
+});
+
+test("Mortgage calculator matches the documented fixed-rate housing example", () => {
+  const calculator = getRequiredCalculator("mortgage-calculator");
+  const output = calculate(calculator, {
+    homePrice: "400000",
+    downPayment: "80000",
+    annualRate: "6.75",
+    years: "30",
+    propertyTaxMonthly: "350",
+    insuranceMonthly: "125"
+  });
+
+  assert.deepEqual(output.errors, []);
+  assertClose(output.values.loanAmount, 320000);
+  assertClose(output.values.principalAndInterest, 2075.51390901829);
+  assertClose(output.values.monthlyTotal, 2550.51390901829);
+  assertClose(output.values.totalInterest, 427185.0072465845);
+});
+
+test("Mortgage calculator rejects a down payment that is equal to or greater than the home price", () => {
+  const calculator = getRequiredCalculator("mortgage-calculator");
+  const output = calculate(calculator, {
+    homePrice: "400000",
+    downPayment: "400000",
+    annualRate: "6.75",
+    years: "30",
+    propertyTaxMonthly: "350",
+    insuranceMonthly: "125"
+  });
+
+  assert.deepEqual(output.values, {});
+  assert.deepEqual(output.errors, ["Enter a home price, down payment, rate, term, and monthly costs."]);
+});
+
+test("Pace calculator matches the documented 6.2 miles in 50 minutes example", () => {
+  const calculator = getRequiredCalculator("pace-calculator");
+  const output = calculate(calculator, {
+    distance: "6.2",
+    hours: "0",
+    minutes: "50",
+    seconds: "0"
+  });
+
+  assert.deepEqual(output.errors, []);
+  assertClose(output.values.totalMinutes, 50);
+  assertClose(output.values.paceMinutesPerMile, 8.064516129032258);
+  assertClose(output.values.speedMph, 7.4399999999999995);
+});
+
+test("Pace calculator requires a total time greater than zero", () => {
+  const calculator = getRequiredCalculator("pace-calculator");
+  const output = calculate(calculator, {
+    distance: "6.2",
+    hours: "0",
+    minutes: "0",
+    seconds: "0"
+  });
+
+  assert.deepEqual(output.values, {});
+  assert.deepEqual(output.errors, ["Total time must be greater than zero."]);
+});
+
+test("Age calculator matches the documented 1990-01-15 to 2026-04-12 example", () => {
+  const calculator = getRequiredCalculator("age-calculator");
+  const output = calculate(calculator, {
+    birthYear: "1990",
+    birthMonth: "1",
+    birthDay: "15",
+    asOfYear: "2026",
+    asOfMonth: "4",
+    asOfDay: "12"
+  });
+
+  assert.deepEqual(output.errors, []);
+  assertClose(output.values.ageYears, 36);
+  assertClose(output.values.ageMonthsRemainder, 2);
+  assertClose(output.values.totalMonths, 434);
+});
+
+test("Time duration calculator handles overnight spans and break subtraction", () => {
+  const calculator = getRequiredCalculator("time-duration-calculator");
+  const output = calculate(calculator, {
+    startHour: "22",
+    startMinute: "15",
+    endHour: "6",
+    endMinute: "45",
+    breakMinutes: "30"
+  });
+
+  assert.deepEqual(output.errors, []);
+  assertClose(output.values.durationMinutes, 480);
+  assertClose(output.values.durationHours, 8);
+});

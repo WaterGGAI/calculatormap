@@ -138,7 +138,9 @@ Open `http://localhost:3000` for the public site. Browsers will prompt for crede
 ```bash
 npm run dev
 npm test
+npm run test:file -- src/lib/calculators/formula-engine.test.ts
 npm run test:watch
+npm run test:watch:file -- src/lib/calculators/formula-engine.test.ts
 npm run lint
 npm run typecheck
 npm run build
