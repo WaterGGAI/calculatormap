@@ -276,3 +276,74 @@ test("Word count tool reports characters, non-space characters, words, and lines
   assertClose(output.values.words, 3);
   assertClose(output.values.lines, 2);
 });
+
+test("Tax-inclusive price calculator returns tax amount and gross total", () => {
+  const calculator = getRequiredCalculator("tax-inclusive-price-calculator");
+  const output = calculate(calculator, {
+    netPrice: "100",
+    taxRate: "8"
+  });
+
+  assert.deepEqual(output.errors, []);
+  assertClose(output.values.taxAmount, 8);
+  assertClose(output.values.grossPrice, 108);
+});
+
+test("Basic calculator gives exponent precedence over unary negation", () => {
+  const calculator = getRequiredCalculator("basic-calculator");
+  const output = calculate(calculator, {
+    expression: "-2^2"
+  });
+
+  assert.deepEqual(output.errors, []);
+  assertClose(output.values.value, -4);
+});
+
+test("Engineering calculator evaluates nested functions and powers", () => {
+  const calculator = getRequiredCalculator("engineering-calculator");
+  const output = calculate(calculator, {
+    expression: "sqrt(144) + pow(2, 8)"
+  });
+
+  assert.deepEqual(output.errors, []);
+  assertClose(output.values.value, 268);
+});
+
+test("Scientific calculator supports constants and log functions", () => {
+  const calculator = getRequiredCalculator("scientific-calculator-with-history");
+  const output = calculate(calculator, {
+    expression: "sin(pi / 2) + log10(1000)"
+  });
+
+  assert.deepEqual(output.errors, []);
+  assertClose(output.values.value, 4);
+});
+
+test("Kids timer adds work blocks and rest breaks across rounds", () => {
+  const calculator = getRequiredCalculator("kids-timer");
+  const output = calculate(calculator, {
+    workMinutes: "10",
+    restMinutes: "2",
+    rounds: "3"
+  });
+
+  assert.deepEqual(output.errors, []);
+  assertClose(output.values.totalWorkMinutes, 30);
+  assertClose(output.values.totalRestMinutes, 4);
+  assertClose(output.values.totalMinutes, 34);
+  assertClose(output.values.totalHours, 34 / 60);
+});
+
+test("Random draw tool returns a deterministic seeded pick list", () => {
+  const calculator = getRequiredCalculator("random-draw-tool");
+  const output = calculate(calculator, {
+    items: "Alice\nBob\nCharlie\nDana",
+    pickCount: "2",
+    seed: "today"
+  });
+
+  assert.deepEqual(output.errors, []);
+  assertClose(output.values.itemCount, 4);
+  assertClose(output.values.pickedCount, 2);
+  assert.equal(output.values.pickedItems, "Bob, Charlie");
+});

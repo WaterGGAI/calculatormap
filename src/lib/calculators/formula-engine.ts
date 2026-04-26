@@ -178,20 +178,11 @@ function evaluateMathExpression(source: string, variables: Record<string, number
   };
 
   const parseMultiplicative = () => {
-    let value = parsePower();
+    let value = parseUnary();
     while (tokens[position] === "*" || tokens[position] === "/") {
       const operator = tokens[position++];
-      const right = parsePower();
+      const right = parseUnary();
       value = operator === "*" ? value * right : value / right;
-    }
-    return value;
-  };
-
-  const parsePower = () => {
-    let value = parseUnary();
-    if (tokens[position] === "^") {
-      position += 1;
-      value = Math.pow(value, parsePower());
     }
     return value;
   };
@@ -205,7 +196,16 @@ function evaluateMathExpression(source: string, variables: Record<string, number
       position += 1;
       return -parseUnary();
     }
-    return parsePrimary();
+    return parsePower();
+  };
+
+  const parsePower = () => {
+    let value = parsePrimary();
+    if (tokens[position] === "^") {
+      position += 1;
+      value = Math.pow(value, parseUnary());
+    }
+    return value;
   };
 
   const parsePrimary = () => {
