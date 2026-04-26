@@ -57,6 +57,7 @@ npm run dev
 Run these before opening a pull request:
 
 ```bash
+npm test
 npm run verify
 ```
 

@@ -127,6 +127,7 @@ cp .env.example .env.local
 
 ```bash
 npm run dev
+npm test
 npm run verify
 ```
 
@@ -136,6 +137,8 @@ Open `http://localhost:3000` for the public site. Browsers will prompt for crede
 
 ```bash
 npm run dev
+npm test
+npm run test:watch
 npm run lint
 npm run typecheck
 npm run build
