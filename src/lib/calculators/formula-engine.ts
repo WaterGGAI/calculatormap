@@ -92,6 +92,17 @@ function formatDateInput(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
+function addUtcMonthsClamped(date: Date, months: number) {
+  const targetMonth = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
+  targetMonth.setUTCMonth(targetMonth.getUTCMonth() + months);
+
+  const year = targetMonth.getUTCFullYear();
+  const month = targetMonth.getUTCMonth();
+  const lastDayOfTargetMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+
+  return new Date(Date.UTC(year, month, Math.min(date.getUTCDate(), lastDayOfTargetMonth)));
+}
+
 function tokenizeExpression(source: string) {
   const tokens: string[] = [];
   let index = 0;
@@ -664,8 +675,7 @@ export function calculate(calculator: Calculator, values: Record<string, string>
       if (!startDate || !Number.isFinite(days) || !Number.isFinite(months)) {
         return { values: resultValues, errors: ["Enter a start date, days, and months."] };
       }
-      const resultDate = new Date(startDate);
-      resultDate.setUTCMonth(resultDate.getUTCMonth() + months);
+      const resultDate = addUtcMonthsClamped(startDate, months);
       resultDate.setUTCDate(resultDate.getUTCDate() + days);
       const differenceDays = (resultDate.getTime() - startDate.getTime()) / 86400000;
       resultValues.resultDate = formatDateInput(resultDate);

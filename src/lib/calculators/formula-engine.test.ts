@@ -186,3 +186,16 @@ test("Time duration calculator handles overnight spans and break subtraction", (
   assertClose(output.values.durationMinutes, 480);
   assertClose(output.values.durationHours, 8);
 });
+
+test("Date add/subtract calculator clamps month-end additions to the last valid day of the target month", () => {
+  const calculator = getRequiredCalculator("date-add-subtract-calculator");
+  const output = calculate(calculator, {
+    startDate: "2026-01-31",
+    days: "0",
+    months: "1"
+  });
+
+  assert.deepEqual(output.errors, []);
+  assert.equal(output.values.resultDate, "2026-02-28");
+  assertClose(output.values.daysChanged, 28);
+});
