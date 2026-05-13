@@ -5,6 +5,7 @@ import type { Calculator, CalculatorValues } from "@/lib/calculators/types";
 import { calculate, formatResult } from "@/lib/calculators/formula-engine";
 import { Button } from "@/components/ui/button";
 import { FieldHint, FieldLabel, Input, Select, Textarea } from "@/components/ui/field";
+import { getCalculatorPresets, type CalculatorPreset } from "@/lib/calculator-presets";
 import { defaultLocale, getLocaleMessages, type AppLocale } from "@/lib/i18n";
 import { translateCalculatorError } from "@/lib/localized-content";
 
@@ -47,6 +48,7 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
   const [values, setValues] = useState<CalculatorValues>(() => initialValues(calculator));
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
   const [scenarios, setScenarios] = useState<Partial<Record<ScenarioSlot, ScenarioSnapshot>>>({});
+  const [activePresetId, setActivePresetId] = useState<string | null>(null);
   const messages = getLocaleMessages(locale);
   const liveLabel = locale === "zh-TW" ? "即時計算" : "Live result";
   const inputLabel = locale === "zh-TW" ? "輸入數值" : "Inputs";
@@ -88,8 +90,23 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
           ready: "Ready to compare",
           scenario: "Scenario"
         };
+  const presetLabels =
+    locale === "zh-TW"
+      ? {
+          title: "快速情境",
+          detail: "點一個常見情境，表單會直接套用數值。",
+          apply: "套用",
+          active: "已套用"
+        }
+      : {
+          title: "Quick scenarios",
+          detail: "Pick a common setup and the inputs fill in instantly.",
+          apply: "Apply",
+          active: "Applied"
+        };
 
   const output = useMemo(() => calculate(calculator, values), [calculator, values]);
+  const presets = useMemo(() => getCalculatorPresets(calculator.slug, locale), [calculator.slug, locale]);
   const requiredFields = calculator.fields.filter((field) => field.required !== false);
   const completedFields = requiredFields.filter((field) => String(values[field.key] ?? "").trim().length > 0);
   const inputProgress = requiredFields.length > 0 ? Math.round((completedFields.length / requiredFields.length) * 100) : 100;
@@ -147,6 +164,17 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
 
   function loadScenario(snapshot: ScenarioSnapshot) {
     setValues({ ...snapshot.values });
+    setActivePresetId(null);
+  }
+
+  function applyPreset(preset: CalculatorPreset) {
+    setValues((current) => ({ ...current, ...preset.values }));
+    setActivePresetId(preset.id);
+  }
+
+  function updateFieldValue(key: string, value: string) {
+    setValues((current) => ({ ...current, [key]: value }));
+    setActivePresetId(null);
   }
 
   return (
@@ -182,6 +210,36 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
               />
             </div>
           </div>
+          {presets.length > 0 ? (
+            <div className="mb-5 rounded-md border border-[var(--line)] bg-[#f8faf8] p-3">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--accent)]">{presetLabels.title}</p>
+                  <p className="mt-1 text-sm leading-6 text-[var(--ink-muted)]">{presetLabels.detail}</p>
+                </div>
+              </div>
+              <div className="mt-3 grid gap-2 xl:grid-cols-3">
+                {presets.map((preset) => {
+                  const isActive = activePresetId === preset.id;
+
+                  return (
+                    <button
+                      className="rounded-md border border-[var(--line)] bg-white p-3 text-left transition-[border-color,background-color,transform] hover:-translate-y-0.5 hover:border-[var(--accent)] disabled:opacity-60 active:scale-[0.98]"
+                      key={preset.id}
+                      type="button"
+                      onClick={() => applyPreset(preset)}
+                    >
+                      <span className="block text-sm font-bold text-[var(--ink)]">{preset.label}</span>
+                      <span className="mt-1 block text-xs leading-5 text-[var(--ink-muted)]">{preset.detail}</span>
+                      <span className="mt-3 inline-flex rounded-full border border-[#cfe2db] bg-[#eef7f3] px-2 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-[#0d6359]">
+                        {isActive ? presetLabels.active : presetLabels.apply}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
           <div className="grid gap-4 sm:grid-cols-2">
             {calculator.fields.map((field, index) => (
               <div className={field.type === "textarea" ? "flex flex-col gap-2 sm:col-span-2" : "flex flex-col gap-2"} key={field.key}>
@@ -194,7 +252,7 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
                       name={field.key}
                       required={field.required}
                       value={values[field.key] ?? ""}
-                      onChange={(event) => setValues((current) => ({ ...current, [field.key]: event.target.value }))}
+                      onChange={(event) => updateFieldValue(field.key, event.target.value)}
                     >
                       {field.options?.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -211,7 +269,7 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
                       placeholder={field.placeholder}
                       required={field.required}
                       value={values[field.key] ?? ""}
-                      onChange={(event) => setValues((current) => ({ ...current, [field.key]: event.target.value }))}
+                      onChange={(event) => updateFieldValue(field.key, event.target.value)}
                     />
                   ) : (
                     <Input
@@ -228,7 +286,7 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
                       max={field.max}
                       step={field.step ?? "any"}
                       value={values[field.key] ?? ""}
-                      onChange={(event) => setValues((current) => ({ ...current, [field.key]: event.target.value }))}
+                      onChange={(event) => updateFieldValue(field.key, event.target.value)}
                     />
                   )}
                   {field.unit ? (
@@ -250,6 +308,7 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
               onClick={() => {
                 const resetValues = initialValues(calculator);
                 setValues(resetValues);
+                setActivePresetId(null);
               }}
             >
               {messages.calculatorPage.reset}
