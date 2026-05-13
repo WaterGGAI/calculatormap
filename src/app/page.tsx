@@ -315,7 +315,7 @@ export function renderHomePage(locale: AppLocale = defaultLocale) {
             title={home.quickWinsTitle}
           />
           <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {quickWins.map((calculator) => (
+            {quickWins.slice(0, 6).map((calculator) => (
               <CalculatorCard calculator={calculator} key={calculator.slug} locale={locale} />
             ))}
           </div>
@@ -332,8 +332,8 @@ export function renderHomePage(locale: AppLocale = defaultLocale) {
             seals={["MAP", "SERP", "PATH"]}
             title={home.seoClustersTitle}
           />
-          <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {seoClusters.map((cluster) => (
+          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            {seoClusters.slice(0, 4).map((cluster) => (
               <ClusterCard cluster={cluster} key={cluster.slug} locale={locale} />
             ))}
           </div>
@@ -351,7 +351,7 @@ export function renderHomePage(locale: AppLocale = defaultLocale) {
             title={home.guidesTitle}
           />
           <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {seoArticles.slice(0, 6).map((article) => (
+            {seoArticles.slice(0, 3).map((article) => (
               <ArticleCard article={article} key={article.slug} locale={locale} />
             ))}
           </div>

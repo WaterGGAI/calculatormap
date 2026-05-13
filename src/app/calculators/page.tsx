@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CalculatorCard } from "@/components/calculators/calculator-card";
+import { CalculatorDirectory } from "@/components/calculators/calculator-directory";
 import { PublicFrame } from "@/components/site/public-frame";
 import { calculators } from "@/lib/data";
 import { defaultLocale, getAlternateLanguagePaths, getLocaleMessages, type AppLocale } from "@/lib/i18n";
@@ -26,19 +26,23 @@ export const metadata: Metadata = buildCalculatorsMetadata();
 
 export function renderCalculatorsPage(locale: AppLocale = defaultLocale) {
   const messages = getLocaleMessages(locale);
+  const eyebrow = locale === "zh-TW" ? "工具地圖" : "Tool map";
+  const prompt =
+    locale === "zh-TW"
+      ? "先搜尋，再選分類。少讀一點，快一點找到能用的工具。"
+      : "Search first, filter second. Less scanning, faster calculating.";
 
   return (
     <PublicFrame locale={locale}>
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-bold">{messages.calculatorsPage.title}</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--ink-muted)]">
-          {messages.calculatorsPage.description}
-        </p>
-        <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {calculators.map((calculator) => (
-            <CalculatorCard calculator={calculator} key={calculator.slug} locale={locale} />
-          ))}
+      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="grid gap-5 border-b border-[var(--line)] pb-7 lg:grid-cols-[minmax(0,0.84fr)_minmax(16rem,0.34fr)] lg:items-end">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--accent)]">{eyebrow}</p>
+            <h1 className="mt-3 max-w-3xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl">{messages.calculatorsPage.title}</h1>
+          </div>
+          <p className="text-sm leading-6 text-[var(--ink-muted)]">{prompt}</p>
         </div>
+        <CalculatorDirectory calculators={calculators} locale={locale} />
       </section>
     </PublicFrame>
   );
