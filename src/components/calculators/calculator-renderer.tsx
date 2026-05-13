@@ -33,14 +33,50 @@ function getInputMode(field: Calculator["fields"][number]) {
 
 export function CalculatorRenderer({ calculator, locale = defaultLocale }: CalculatorRendererProps) {
   const [values, setValues] = useState<CalculatorValues>(() => initialValues(calculator));
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
   const messages = getLocaleMessages(locale);
-  const primaryResult = calculator.results[0];
-  const secondaryResults = calculator.results.slice(1);
   const liveLabel = locale === "zh-TW" ? "即時計算" : "Live result";
   const inputLabel = locale === "zh-TW" ? "輸入數值" : "Inputs";
   const helperLabel = locale === "zh-TW" ? "結果會隨輸入更新。" : "Results update as you type.";
+  const inputStatusLabel = locale === "zh-TW" ? "輸入進度" : "Input status";
+  const copyLabel = locale === "zh-TW" ? "複製結果" : "Copy result";
+  const copiedLabel = locale === "zh-TW" ? "已複製" : "Copied";
+  const copyErrorLabel = locale === "zh-TW" ? "複製失敗" : "Copy failed";
+  const insightTitle = locale === "zh-TW" ? "快速檢查" : "Quick check";
+  const insightText =
+    locale === "zh-TW"
+      ? "改一兩個輸入值比較第二個情境，再把結果拿去做決策。"
+      : "Change one or two inputs to compare a second scenario before using the number.";
 
   const output = useMemo(() => calculate(calculator, values), [calculator, values]);
+  const requiredFields = calculator.fields.filter((field) => field.required !== false);
+  const completedFields = requiredFields.filter((field) => String(values[field.key] ?? "").trim().length > 0);
+  const inputProgress = requiredFields.length > 0 ? Math.round((completedFields.length / requiredFields.length) * 100) : 100;
+  const formattedResults = calculator.results.map((result) => ({
+    ...result,
+    formattedValue: formatResult(result, output.values[result.key])
+  }));
+  const formattedPrimary = formattedResults[0];
+  const formattedSecondary = formattedResults.slice(1);
+  const summaryText = [
+    calculator.name,
+    output.errors.length > 0
+      ? output.errors.map((error) => translateCalculatorError(error, locale)).join("\n")
+      : formattedResults.map((result) => `${result.label}: ${result.formattedValue}`).join("\n")
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  async function copySummary() {
+    try {
+      await navigator.clipboard.writeText(summaryText);
+      setCopyState("copied");
+      window.setTimeout(() => setCopyState("idle"), 1600);
+    } catch {
+      setCopyState("error");
+      window.setTimeout(() => setCopyState("idle"), 1600);
+    }
+  }
 
   return (
     <section
@@ -61,86 +97,106 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
             event.preventDefault();
           }}
         >
-        <div className="grid gap-4 sm:grid-cols-2">
-          {calculator.fields.map((field, index) => (
-            <div className={field.type === "textarea" ? "flex flex-col gap-2 sm:col-span-2" : "flex flex-col gap-2"} key={field.key}>
-              <FieldLabel htmlFor={field.key}>{field.label}</FieldLabel>
-              <div className="flex min-h-12 overflow-hidden rounded-md border border-[var(--line)] bg-[var(--surface)] transition-colors focus-within:border-[var(--accent)]">
-                {field.type === "select" ? (
-                  <Select
-                    className="min-w-0 flex-1 border-0 text-base sm:text-sm focus:border-0"
-                    id={field.key}
-                    name={field.key}
-                    required={field.required}
-                    value={values[field.key] ?? ""}
-                    onChange={(event) => setValues((current) => ({ ...current, [field.key]: event.target.value }))}
-                  >
-                    {field.options?.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </Select>
-                ) : field.type === "textarea" ? (
-                  <Textarea
-                    className="min-w-0 flex-1 border-0 text-base sm:text-sm focus:border-0"
-                    enterKeyHint={index === calculator.fields.length - 1 ? "done" : "next"}
-                    id={field.key}
-                    name={field.key}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                    value={values[field.key] ?? ""}
-                    onChange={(event) => setValues((current) => ({ ...current, [field.key]: event.target.value }))}
-                  />
-                ) : (
-                  <Input
-                    autoComplete="off"
-                    className="min-w-0 flex-1 border-0 text-base sm:text-sm focus:border-0"
-                    enterKeyHint={index === calculator.fields.length - 1 ? "done" : "next"}
-                    id={field.key}
-                    inputMode={getInputMode(field)}
-                    name={field.key}
-                    type={field.type === "text" ? "text" : "number"}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                    min={field.min}
-                    max={field.max}
-                    step={field.step ?? "any"}
-                    value={values[field.key] ?? ""}
-                    onChange={(event) => setValues((current) => ({ ...current, [field.key]: event.target.value }))}
-                  />
-                )}
-                {field.unit ? (
-                  <span className="flex min-w-14 shrink-0 items-center justify-center border-l border-[var(--line)] bg-[var(--surface-muted)] px-3 text-sm font-semibold text-[var(--ink-muted)] sm:min-w-16">
-                    {field.unit}
-                  </span>
-                ) : null}
-              </div>
-              {field.helpText ? <FieldHint>{field.helpText}</FieldHint> : null}
+          <div className="mb-5 rounded-md border border-[var(--line)] bg-[#f8faf8] p-3">
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--ink-muted)]">{inputStatusLabel}</p>
+              <p className="text-xs font-bold tabular-nums text-[var(--accent-strong)]">
+                {completedFields.length}/{requiredFields.length || calculator.fields.length}
+              </p>
             </div>
-          ))}
-        </div>
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <Button className="w-full active:scale-[0.98] sm:w-auto" type="submit">{messages.calculatorPage.calculate}</Button>
-          <Button
-            className="w-full sm:w-auto"
-            type="button"
-            variant="secondary"
-            onClick={() => {
-              const resetValues = initialValues(calculator);
-              setValues(resetValues);
-            }}
-          >
-            {messages.calculatorPage.reset}
-          </Button>
-        </div>
-      </form>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#dfe8e3]">
+              <span
+                className="block h-full rounded-full bg-[var(--accent)] transition-[width] duration-300"
+                style={{ width: `${inputProgress}%` }}
+              />
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {calculator.fields.map((field, index) => (
+              <div className={field.type === "textarea" ? "flex flex-col gap-2 sm:col-span-2" : "flex flex-col gap-2"} key={field.key}>
+                <FieldLabel htmlFor={field.key}>{field.label}</FieldLabel>
+                <div className="flex min-h-12 overflow-hidden rounded-md border border-[var(--line)] bg-[var(--surface)] transition-colors focus-within:border-[var(--accent)]">
+                  {field.type === "select" ? (
+                    <Select
+                      className="min-w-0 flex-1 border-0 text-base sm:text-sm focus:border-0"
+                      id={field.key}
+                      name={field.key}
+                      required={field.required}
+                      value={values[field.key] ?? ""}
+                      onChange={(event) => setValues((current) => ({ ...current, [field.key]: event.target.value }))}
+                    >
+                      {field.options?.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </Select>
+                  ) : field.type === "textarea" ? (
+                    <Textarea
+                      className="min-w-0 flex-1 border-0 text-base sm:text-sm focus:border-0"
+                      enterKeyHint={index === calculator.fields.length - 1 ? "done" : "next"}
+                      id={field.key}
+                      name={field.key}
+                      placeholder={field.placeholder}
+                      required={field.required}
+                      value={values[field.key] ?? ""}
+                      onChange={(event) => setValues((current) => ({ ...current, [field.key]: event.target.value }))}
+                    />
+                  ) : (
+                    <Input
+                      autoComplete="off"
+                      className="min-w-0 flex-1 border-0 text-base sm:text-sm focus:border-0"
+                      enterKeyHint={index === calculator.fields.length - 1 ? "done" : "next"}
+                      id={field.key}
+                      inputMode={getInputMode(field)}
+                      name={field.key}
+                      type={field.type === "text" ? "text" : "number"}
+                      placeholder={field.placeholder}
+                      required={field.required}
+                      min={field.min}
+                      max={field.max}
+                      step={field.step ?? "any"}
+                      value={values[field.key] ?? ""}
+                      onChange={(event) => setValues((current) => ({ ...current, [field.key]: event.target.value }))}
+                    />
+                  )}
+                  {field.unit ? (
+                    <span className="flex min-w-14 shrink-0 items-center justify-center border-l border-[var(--line)] bg-[var(--surface-muted)] px-3 text-sm font-semibold text-[var(--ink-muted)] sm:min-w-16">
+                      {field.unit}
+                    </span>
+                  ) : null}
+                </div>
+                {field.helpText ? <FieldHint>{field.helpText}</FieldHint> : null}
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Button className="w-full active:scale-[0.98] sm:w-auto" type="submit">{messages.calculatorPage.calculate}</Button>
+            <Button
+              className="w-full sm:w-auto"
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                const resetValues = initialValues(calculator);
+                setValues(resetValues);
+              }}
+            >
+              {messages.calculatorPage.reset}
+            </Button>
+          </div>
+        </form>
 
-        <div className="border-t border-[#233b36] bg-[#102420] p-4 text-white sm:p-6 lg:border-l lg:border-t-0">
-        <div className="flex items-center justify-between gap-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#a8ddd4]">{liveLabel}</p>
-          <span className="rounded-full border border-white/12 px-3 py-1 text-xs font-semibold text-[#c8d8d4]">{messages.calculatorPage.result}</span>
-        </div>
+        <div className="border-t border-[#233b36] bg-[#102420] p-4 text-white sm:p-6 lg:sticky lg:top-24 lg:self-start lg:border-l lg:border-t-0">
+          <div className="flex items-center justify-between gap-4" aria-live="polite">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#a8ddd4]">{liveLabel}</p>
+            <button
+              className="rounded-full border border-white/12 px-3 py-1 text-xs font-semibold text-[#c8d8d4] transition-colors hover:border-[#a8ddd4] hover:text-white active:scale-[0.98]"
+              type="button"
+              onClick={copySummary}
+            >
+              {copyState === "copied" ? copiedLabel : copyState === "error" ? copyErrorLabel : copyLabel}
+            </button>
+          </div>
         {output.errors.length > 0 ? (
           <div className="mt-4 rounded-md border border-[#e9b6ad] bg-[#3b1611] p-3 text-sm text-[#ffe2dd]">
             {output.errors.map((error) => (
@@ -149,24 +205,28 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
           </div>
         ) : null}
 
-        {primaryResult ? (
+        {formattedPrimary ? (
           <div className="mt-5 rounded-md border border-white/12 bg-white/[0.08] p-4">
-            <p className="text-sm text-[#bfcec9]">{primaryResult.label}</p>
-            <p className="mt-2 break-words text-4xl font-bold tracking-tight text-white">{formatResult(primaryResult, output.values[primaryResult.key])}</p>
-            {primaryResult.description ? <p className="mt-2 text-sm leading-6 text-[#bfcec9]">{primaryResult.description}</p> : null}
+            <p className="text-sm text-[#bfcec9]">{formattedPrimary.label}</p>
+            <p className="mt-2 break-words text-4xl font-bold tracking-tight text-white">{formattedPrimary.formattedValue}</p>
+            {formattedPrimary.description ? <p className="mt-2 text-sm leading-6 text-[#bfcec9]">{formattedPrimary.description}</p> : null}
           </div>
         ) : null}
 
-        {secondaryResults.length > 0 ? (
+        {formattedSecondary.length > 0 ? (
           <div className="mt-3 grid gap-3">
-            {secondaryResults.map((result) => (
+            {formattedSecondary.map((result) => (
               <div key={result.key} className="flex items-start justify-between gap-4 rounded-md border border-white/10 bg-white/[0.045] p-3">
                 <p className="min-w-0 text-sm leading-6 text-[#bfcec9]">{result.label}</p>
-                <p className="shrink-0 text-right text-lg font-bold text-white">{formatResult(result, output.values[result.key])}</p>
+                <p className="shrink-0 text-right text-lg font-bold text-white">{result.formattedValue}</p>
               </div>
             ))}
           </div>
         ) : null}
+        <div className="mt-4 rounded-md border border-white/10 bg-white/[0.045] p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#a8ddd4]">{insightTitle}</p>
+          <p className="mt-2 text-sm leading-6 text-[#bfcec9]">{insightText}</p>
+        </div>
         </div>
       </div>
     </section>
