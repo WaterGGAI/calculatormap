@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Calculator, CalculatorValues } from "@/lib/calculators/types";
 import { calculate, formatResult } from "@/lib/calculators/formula-engine";
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,7 @@ function getInputMode(field: Calculator["fields"][number]) {
 export function CalculatorRenderer({ calculator, locale = defaultLocale }: CalculatorRendererProps) {
   const [values, setValues] = useState<CalculatorValues>(() => initialValues(calculator));
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
+  const [linkCopyState, setLinkCopyState] = useState<"idle" | "copied" | "error">("idle");
   const [scenarios, setScenarios] = useState<Partial<Record<ScenarioSlot, ScenarioSnapshot>>>({});
   const [activePresetId, setActivePresetId] = useState<string | null>(null);
   const messages = getLocaleMessages(locale);
@@ -57,6 +58,8 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
   const copyLabel = locale === "zh-TW" ? "複製結果" : "Copy result";
   const copiedLabel = locale === "zh-TW" ? "已複製" : "Copied";
   const copyErrorLabel = locale === "zh-TW" ? "複製失敗" : "Copy failed";
+  const copyLinkLabel = locale === "zh-TW" ? "複製設定連結" : "Copy setup link";
+  const linkCopiedLabel = locale === "zh-TW" ? "連結已複製" : "Link copied";
   const insightTitle = locale === "zh-TW" ? "快速檢查" : "Quick check";
   const insightText =
     locale === "zh-TW"
@@ -132,6 +135,33 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
     .filter(Boolean)
     .join("\n");
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const hydratedValues = initialValues(calculator);
+    let hasSharedValue = false;
+    let cancelled = false;
+
+    for (const field of calculator.fields) {
+      if (params.has(field.key)) {
+        hydratedValues[field.key] = params.get(field.key) ?? "";
+        hasSharedValue = true;
+      }
+    }
+
+    if (hasSharedValue) {
+      queueMicrotask(() => {
+        if (!cancelled) {
+          setValues(hydratedValues);
+          setActivePresetId(null);
+        }
+      });
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [calculator]);
+
   async function copySummary() {
     try {
       await navigator.clipboard.writeText(summaryText);
@@ -140,6 +170,32 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
     } catch {
       setCopyState("error");
       window.setTimeout(() => setCopyState("idle"), 1600);
+    }
+  }
+
+  function buildSetupUrl() {
+    const url = new URL(window.location.href);
+    url.hash = "";
+    url.search = "";
+
+    for (const field of calculator.fields) {
+      const value = values[field.key];
+      if (String(value ?? "").trim().length > 0) {
+        url.searchParams.set(field.key, value);
+      }
+    }
+
+    return url.toString();
+  }
+
+  async function copySetupLink() {
+    try {
+      await navigator.clipboard.writeText(buildSetupUrl());
+      setLinkCopyState("copied");
+      window.setTimeout(() => setLinkCopyState("idle"), 1600);
+    } catch {
+      setLinkCopyState("error");
+      window.setTimeout(() => setLinkCopyState("idle"), 1600);
     }
   }
 
@@ -317,15 +373,24 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
         </form>
 
         <div className="border-t border-[#233b36] bg-[#102420] p-4 text-white sm:p-6 lg:sticky lg:top-24 lg:self-start lg:border-l lg:border-t-0">
-          <div className="flex items-center justify-between gap-4" aria-live="polite">
+          <div className="flex flex-wrap items-center justify-between gap-3" aria-live="polite">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#a8ddd4]">{liveLabel}</p>
-            <button
-              className="rounded-full border border-white/12 px-3 py-1 text-xs font-semibold text-[#c8d8d4] transition-colors hover:border-[#a8ddd4] hover:text-white active:scale-[0.98]"
-              type="button"
-              onClick={copySummary}
-            >
-              {copyState === "copied" ? copiedLabel : copyState === "error" ? copyErrorLabel : copyLabel}
-            </button>
+            <div className="flex flex-wrap justify-end gap-2">
+              <button
+                className="rounded-full border border-white/12 px-3 py-1 text-xs font-semibold text-[#c8d8d4] transition-colors hover:border-[#a8ddd4] hover:text-white active:scale-[0.98]"
+                type="button"
+                onClick={copySetupLink}
+              >
+                {linkCopyState === "copied" ? linkCopiedLabel : linkCopyState === "error" ? copyErrorLabel : copyLinkLabel}
+              </button>
+              <button
+                className="rounded-full border border-white/12 px-3 py-1 text-xs font-semibold text-[#c8d8d4] transition-colors hover:border-[#a8ddd4] hover:text-white active:scale-[0.98]"
+                type="button"
+                onClick={copySummary}
+              >
+                {copyState === "copied" ? copiedLabel : copyState === "error" ? copyErrorLabel : copyLabel}
+              </button>
+            </div>
           </div>
         {output.errors.length > 0 ? (
           <div className="mt-4 rounded-md border border-[#e9b6ad] bg-[#3b1611] p-3 text-sm text-[#ffe2dd]">
