@@ -13,6 +13,18 @@ type CalculatorRendererProps = {
   locale?: AppLocale;
 };
 
+type ScenarioSlot = "A" | "B";
+
+type ScenarioSnapshot = {
+  label: string;
+  values: CalculatorValues;
+  resultLabel: string;
+  resultValue: string;
+  rawValue: number | string | undefined;
+  hasErrors: boolean;
+  errorText: string;
+};
+
 function initialValues(calculator: Calculator): CalculatorValues {
   return Object.fromEntries(calculator.fields.map((field) => [field.key, field.defaultValue ?? ""]));
 }
@@ -34,6 +46,7 @@ function getInputMode(field: Calculator["fields"][number]) {
 export function CalculatorRenderer({ calculator, locale = defaultLocale }: CalculatorRendererProps) {
   const [values, setValues] = useState<CalculatorValues>(() => initialValues(calculator));
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
+  const [scenarios, setScenarios] = useState<Partial<Record<ScenarioSlot, ScenarioSnapshot>>>({});
   const messages = getLocaleMessages(locale);
   const liveLabel = locale === "zh-TW" ? "即時計算" : "Live result";
   const inputLabel = locale === "zh-TW" ? "輸入數值" : "Inputs";
@@ -47,6 +60,34 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
     locale === "zh-TW"
       ? "改一兩個輸入值比較第二個情境，再把結果拿去做決策。"
       : "Change one or two inputs to compare a second scenario before using the number.";
+  const compareLabels =
+    locale === "zh-TW"
+      ? {
+          title: "情境比較",
+          detail: "先存情境 A，改幾個輸入後再存情境 B。",
+          saveA: "存為 A",
+          saveB: "存為 B",
+          load: "載入",
+          empty: "尚未儲存",
+          current: "目前輸入",
+          fixErrors: "修正錯誤後才能儲存情境。",
+          delta: "B - A 差異",
+          ready: "已可比較",
+          scenario: "情境"
+        }
+      : {
+          title: "Scenario compare",
+          detail: "Save scenario A, change a few inputs, then save scenario B.",
+          saveA: "Save as A",
+          saveB: "Save as B",
+          load: "Load",
+          empty: "Not saved yet",
+          current: "Current inputs",
+          fixErrors: "Fix errors before saving a scenario.",
+          delta: "B - A difference",
+          ready: "Ready to compare",
+          scenario: "Scenario"
+        };
 
   const output = useMemo(() => calculate(calculator, values), [calculator, values]);
   const requiredFields = calculator.fields.filter((field) => field.required !== false);
@@ -58,6 +99,13 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
   }));
   const formattedPrimary = formattedResults[0];
   const formattedSecondary = formattedResults.slice(1);
+  const canSaveScenario = Boolean(formattedPrimary) && output.errors.length === 0;
+  const scenarioA = scenarios.A;
+  const scenarioB = scenarios.B;
+  const scenarioDelta =
+    scenarioA && scenarioB && typeof scenarioA.rawValue === "number" && typeof scenarioB.rawValue === "number" && formattedPrimary
+      ? formatResult(formattedPrimary, scenarioB.rawValue - scenarioA.rawValue)
+      : null;
   const summaryText = [
     calculator.name,
     output.errors.length > 0
@@ -76,6 +124,29 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
       setCopyState("error");
       window.setTimeout(() => setCopyState("idle"), 1600);
     }
+  }
+
+  function saveScenario(slot: ScenarioSlot) {
+    if (!formattedPrimary || !canSaveScenario) {
+      return;
+    }
+
+    setScenarios((current) => ({
+      ...current,
+      [slot]: {
+        label: `${compareLabels.current} ${slot}`,
+        values: { ...values },
+        resultLabel: formattedPrimary.label,
+        resultValue: formattedPrimary.formattedValue,
+        rawValue: output.values[formattedPrimary.key],
+        hasErrors: output.errors.length > 0,
+        errorText: output.errors.map((error) => translateCalculatorError(error, locale)).join(" ")
+      }
+    }));
+  }
+
+  function loadScenario(snapshot: ScenarioSnapshot) {
+    setValues({ ...snapshot.values });
   }
 
   return (
@@ -223,6 +294,76 @@ export function CalculatorRenderer({ calculator, locale = defaultLocale }: Calcu
             ))}
           </div>
         ) : null}
+        <div className="mt-4 rounded-md border border-white/10 bg-white/[0.045] p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#a8ddd4]">{compareLabels.title}</p>
+              <p className="mt-2 text-sm leading-6 text-[#bfcec9]">{compareLabels.detail}</p>
+            </div>
+            {scenarioDelta ? (
+              <span className="shrink-0 rounded-full border border-[#a8ddd4]/35 px-2 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-[#d8fff8]">
+                {compareLabels.ready}
+              </span>
+            ) : null}
+          </div>
+          {!canSaveScenario ? <p className="mt-3 rounded-md border border-[#e9b6ad]/35 bg-[#3b1611]/50 p-2 text-xs text-[#ffe2dd]">{compareLabels.fixErrors}</p> : null}
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            <button
+              className="min-h-10 rounded-md border border-white/12 bg-white/10 px-3 py-2 text-sm font-semibold text-white transition-colors hover:border-[#a8ddd4] disabled:pointer-events-none disabled:opacity-45 active:scale-[0.98]"
+              disabled={!canSaveScenario}
+              type="button"
+              onClick={() => saveScenario("A")}
+            >
+              {compareLabels.saveA}
+            </button>
+            <button
+              className="min-h-10 rounded-md border border-white/12 bg-white/10 px-3 py-2 text-sm font-semibold text-white transition-colors hover:border-[#a8ddd4] disabled:pointer-events-none disabled:opacity-45 active:scale-[0.98]"
+              disabled={!canSaveScenario}
+              type="button"
+              onClick={() => saveScenario("B")}
+            >
+              {compareLabels.saveB}
+            </button>
+          </div>
+          <div className="mt-3 grid gap-2">
+            {(["A", "B"] as const).map((slot) => {
+              const snapshot = scenarios[slot];
+
+              return (
+                <div className="rounded-md border border-white/10 bg-[#0c1d1a] p-3" key={slot}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-[#a8ddd4]">{compareLabels.scenario} {slot}</p>
+                      {snapshot ? (
+                        <>
+                          <p className="mt-2 text-sm text-[#bfcec9]">{snapshot.resultLabel}</p>
+                          <p className="mt-1 break-words text-xl font-bold text-white">{snapshot.hasErrors ? snapshot.errorText : snapshot.resultValue}</p>
+                        </>
+                      ) : (
+                        <p className="mt-2 text-sm text-[#bfcec9]">{compareLabels.empty}</p>
+                      )}
+                    </div>
+                    {snapshot ? (
+                      <button
+                        className="shrink-0 rounded-full border border-white/12 px-3 py-1 text-xs font-semibold text-[#c8d8d4] transition-colors hover:border-[#a8ddd4] hover:text-white active:scale-[0.98]"
+                        type="button"
+                        onClick={() => loadScenario(snapshot)}
+                      >
+                        {compareLabels.load}
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {scenarioDelta ? (
+            <div className="mt-3 rounded-md border border-[#a8ddd4]/25 bg-[#12312b] p-3">
+              <p className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-[#a8ddd4]">{compareLabels.delta}</p>
+              <p className="mt-1 break-words text-xl font-bold text-white">{scenarioDelta}</p>
+            </div>
+          ) : null}
+        </div>
         <div className="mt-4 rounded-md border border-white/10 bg-white/[0.045] p-3">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#a8ddd4]">{insightTitle}</p>
           <p className="mt-2 text-sm leading-6 text-[#bfcec9]">{insightText}</p>
