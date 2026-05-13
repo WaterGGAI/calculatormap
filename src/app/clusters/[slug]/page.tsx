@@ -8,8 +8,8 @@ import { ButtonLink } from "@/components/ui/button";
 import { getArticlesForCluster, getSeoCluster, seoClusters } from "@/lib/editorial-content";
 import { getCalculator } from "@/lib/data";
 import { defaultLocale, getAlternateLanguagePaths, getLocaleMessages, localizeHref, type AppLocale } from "@/lib/i18n";
-import { localizeCluster } from "@/lib/localized-content";
-import { absoluteUrl, collectionPageSchema } from "@/lib/seo";
+import { localizeCalculator, localizeCluster } from "@/lib/localized-content";
+import { absoluteUrl, collectionPageSchema, itemListSchema } from "@/lib/seo";
 
 export function generateStaticParams() {
   return seoClusters.map((cluster) => ({ slug: cluster.slug }));
@@ -57,7 +57,23 @@ export function renderClusterPage(slug: string, locale: AppLocale = defaultLocal
     .filter((calculator): calculator is NonNullable<typeof calculator> => Boolean(calculator));
   const firstCalculator = calculators[0];
   const articles = getArticlesForCluster(rawCluster.slug);
-  const jsonLd = collectionPageSchema(`${cluster.name} ${messages.categoryPage.titleSuffix}`, cluster.description, `/clusters/${cluster.slug}`, locale);
+  const jsonLd = [
+    collectionPageSchema(`${cluster.name} ${messages.categoryPage.titleSuffix}`, cluster.description, `/clusters/${cluster.slug}`, locale),
+    itemListSchema(
+      `${cluster.name} ${messages.clusterPage.coreCalculators}`,
+      cluster.description,
+      calculators.map((calculator) => {
+        const localizedCalculator = localizeCalculator(calculator, locale);
+
+        return {
+          name: localizedCalculator.name,
+          description: localizedCalculator.shortDescription,
+          url: absoluteUrl(`/calculator/${calculator.slug}`, locale)
+        };
+      }),
+      locale
+    )
+  ];
   const labels =
     locale === "zh-TW"
       ? {

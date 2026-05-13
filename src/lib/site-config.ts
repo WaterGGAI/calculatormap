@@ -10,7 +10,8 @@ export const siteConfig = {
   defaultTitleTemplate: "%s | CalculatorMap",
   organizationName: "CalculatorMap",
   locale: "en_US",
-  contactEmail: "hello@calculatormap.com"
+  contactEmail: "hello@calculatormap.com",
+  sameAs: ["https://github.com/WaterGGAI/calculatormap"]
 } as const;
 
 export function withSiteSuffix(title: string) {

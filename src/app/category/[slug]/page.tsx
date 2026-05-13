@@ -7,8 +7,8 @@ import { ButtonLink } from "@/components/ui/button";
 import { seoArticles } from "@/lib/editorial-content";
 import { categories, getCalculatorsByCategory, getCategory } from "@/lib/data";
 import { defaultLocale, getAlternateLanguagePaths, getLocaleMessages, localizeHref, type AppLocale } from "@/lib/i18n";
-import { localizeCategory } from "@/lib/localized-content";
-import { absoluteUrl, collectionPageSchema } from "@/lib/seo";
+import { localizeCalculator, localizeCategory } from "@/lib/localized-content";
+import { absoluteUrl, collectionPageSchema, itemListSchema } from "@/lib/seo";
 
 export function generateStaticParams() {
   return categories.map((category) => ({ slug: category.slug }));
@@ -59,7 +59,23 @@ export function renderCategoryPage(slug: string, locale: AppLocale = defaultLoca
         article.relatedCalculatorSlug === calculator.slug || article.relatedCalculatorSlugs.includes(calculator.slug)
     )
   );
-  const jsonLd = collectionPageSchema(`${category.name} ${messages.categoryPage.titleSuffix}`, category.seoDescription, `/category/${category.slug}`, locale);
+  const jsonLd = [
+    collectionPageSchema(`${category.name} ${messages.categoryPage.titleSuffix}`, category.seoDescription, `/category/${category.slug}`, locale),
+    itemListSchema(
+      `${category.name} ${messages.categoryPage.titleSuffix}`,
+      category.description,
+      categoryCalculators.map((calculator) => {
+        const localizedCalculator = localizeCalculator(calculator, locale);
+
+        return {
+          name: localizedCalculator.name,
+          description: localizedCalculator.shortDescription,
+          url: absoluteUrl(`/calculator/${calculator.slug}`, locale)
+        };
+      }),
+      locale
+    )
+  ];
   const labels =
     locale === "zh-TW"
       ? {

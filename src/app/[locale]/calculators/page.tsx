@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { buildCalculatorsMetadata, renderCalculatorsPage } from "@/app/calculators/page";
+import {
+  buildCalculatorsMetadata,
+  getCalculatorDirectoryQuery,
+  renderCalculatorsPage,
+  type CalculatorDirectorySearchParams
+} from "@/app/calculators/page";
 import { getSecondaryRouteLocale } from "@/lib/locale-routing";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -8,8 +13,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return buildCalculatorsMetadata(getSecondaryRouteLocale(locale));
 }
 
-export default async function LocalizedCalculatorsPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function LocalizedCalculatorsPage({
+  params,
+  searchParams
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams?: Promise<CalculatorDirectorySearchParams>;
+}) {
   const { locale } = await params;
 
-  return renderCalculatorsPage(getSecondaryRouteLocale(locale));
+  return renderCalculatorsPage(getSecondaryRouteLocale(locale), getCalculatorDirectoryQuery(await searchParams));
 }

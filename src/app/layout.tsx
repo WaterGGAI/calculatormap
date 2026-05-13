@@ -31,6 +31,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
+      <head>
+        <link href="/llms.txt" rel="alternate" title="CalculatorMap LLM guide" type="text/markdown" />
+        <link href="/calculator-index.json" rel="alternate" title="CalculatorMap calculator index" type="application/json" />
+      </head>
       <body suppressHydrationWarning>{children}</body>
     </html>
   );

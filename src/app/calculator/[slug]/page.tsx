@@ -13,9 +13,10 @@ import { getMergedCalculatorBySlug } from "@/lib/calculator-content";
 import { getCalculatorVisualTheme, type CalculatorVisualTheme } from "@/lib/calculator-visuals";
 import { getArticlesForCalculator } from "@/lib/editorial-content";
 import { categories, getCalculator, getRelatedCalculators } from "@/lib/data";
-import { defaultLocale, getAlternateLanguagePaths, getLocaleMessages, localizeHref, type AppLocale } from "@/lib/i18n";
+import { defaultLocale, getAlternateLanguagePaths, getLocaleMessages, localeConfig, localizeHref, type AppLocale } from "@/lib/i18n";
 import { localizeCalculator, localizeCategory, localizeVisualTheme } from "@/lib/localized-content";
-import { absoluteUrl, calculatorSchema, faqSchema } from "@/lib/seo";
+import { absoluteUrl, buildCalculatorKeywords, calculatorSchema, faqSchema, howToSchema } from "@/lib/seo";
+import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -36,17 +37,31 @@ export async function buildCalculatorMetadata(slug: string, locale: AppLocale = 
   }
 
   const calculator = localizeCalculator(rawCalculator, locale);
+  const rawCategory = categories.find((item) => item.id === rawCalculator.categoryId);
+  const category = rawCategory ? localizeCategory(rawCategory, locale) : undefined;
   const path = rawCalculator.seo.canonical;
+  const canonical = absoluteUrl(path, locale);
 
   return {
     title: calculator.seo.title,
     description: calculator.seo.description,
+    keywords: buildCalculatorKeywords(calculator, category),
     alternates: {
-      canonical: absoluteUrl(path, locale),
+      canonical,
       languages: getAlternateLanguagePaths(path)
     },
     openGraph: {
-      url: absoluteUrl(path, locale)
+      type: "website",
+      url: canonical,
+      siteName: siteConfig.name,
+      title: calculator.seo.title,
+      description: calculator.seo.description,
+      locale: localeConfig[locale].ogLocale
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: calculator.seo.title,
+      description: calculator.seo.description
     },
     robots: calculator.seo.robots
   };
@@ -192,7 +207,7 @@ export async function renderCalculatorPage(slug: string, locale: AppLocale = def
   const category = rawCategory ? localizeCategory(rawCategory, locale) : undefined;
   const related = getRelatedCalculators(rawCalculator).map((item) => localizeCalculator(item, locale));
   const relatedArticles = getArticlesForCalculator(rawCalculator.slug);
-  const jsonLd = [calculatorSchema(calculator, category, locale), faqSchema(calculator)];
+  const jsonLd = [calculatorSchema(calculator, category, locale), howToSchema(calculator, locale), faqSchema(calculator)];
   const visual = localizeVisualTheme(getCalculatorVisualTheme(rawCategory), rawCategory?.slug, locale);
   const referenceTitle = locale === "zh-TW" ? "需要更多細節？" : "Need more detail?";
   const referenceDescription =

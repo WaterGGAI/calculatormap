@@ -10,12 +10,14 @@ import { cn } from "@/lib/utils";
 
 export function CalculatorDirectory({
   calculators,
-  locale = defaultLocale
+  locale = defaultLocale,
+  initialQuery = ""
 }: {
   calculators: Calculator[];
   locale?: AppLocale;
+  initialQuery?: string;
 }) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [activeCategory, setActiveCategory] = useState("all");
   const labels =
     locale === "zh-TW"
